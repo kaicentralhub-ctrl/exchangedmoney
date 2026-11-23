@@ -1,0 +1,20 @@
+{
+  "name": "exchangedmoney",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p packages/core && tsc -p apps/worker && tsc -p scripts",
+    "dev": "pnpm --filter @exm/worker dev",
+    "deploy": "pnpm --filter @exm/worker deploy",
+    "backfill:ecb": "tsx scripts/backfill-ecb.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}

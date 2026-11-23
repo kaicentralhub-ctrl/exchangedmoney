@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>exchangedmoney: what your money really changes hands for</title>
+  <meta name="description" content="Every exchange rate you can actually get, measured against the real one. Card markups, pay-in-which-currency checks and rate alerts. Launching soon.">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="exchangedmoney">
+  <meta property="og:description" content="What your money really changes hands for. Launching soon.">
+</head>
+<body>
+  <div class="wrap">
+    <header class="site">
+      <a class="wordmark" href="/">exchanged<span>money</span></a>
+      <small>Independent. Launching 2027.</small>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <h1>What your money <em>really</em> changes hands for.</h1>
+          <p class="lede">Rate sites show the price of a currency. We measure the rate you actually get: through your card, your bank, a transfer app or the till. Then we tell you which to use.</p>
+
+          <form class="signup" action="/api/subscribe" method="post" novalidate>
+            <label for="email" class="hp">Email address</label>
+            <div class="field">
+              <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required aria-describedby="consent">
+              <button type="submit">Notify me</button>
+            </div>
+            <fieldset>
+              <legend>Tell me about</legend>
+              <label><input type="checkbox" name="interests" value="card-league" checked> Cheapest card abroad</label>
+              <label><input type="checkbox" name="interests" value="pay-in-which-currency"> Pay in which currency</label>
+              <label><input type="checkbox" name="interests" value="rate-alerts"> Rate alerts</label>
+            </fieldset>
+            <div class="hp" aria-hidden="true">
+              <label for="website">Leave this empty</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <p id="consent" class="consent">We'll email you to confirm, then only about the things you ticked. Unsubscribe in one click. <a href="/privacy.html">Privacy</a>.</p>
+            <p class="status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <aside class="receipt" aria-label="Example of what we measure">
+          <h2>€1,000 dinner bill, paid in pounds</h2>
+          <dl>
+            <dt>At the real rate</dt><dd>£854.70</dd>
+            <dt>Card machine's "pay in GBP"</dt><dd>£919.00</dd>
+            <dt class="total">You'd have lost</dt><dd class="total">£64.30</dd>
+          </dl>
+          <p class="note">Illustrative figures. The real tool will show today's numbers for your card.</p>
+        </aside>
+      </section>
+
+      <section class="tools" aria-labelledby="tools-h">
+        <h2 id="tools-h">What's coming</h2>
+        <div class="grid">
+          <article class="tool">
+            <div class="num">01</div>
+            <h3>Card Markup League</h3>
+            <p>Every UK card's published markup over the ECB rate, collected daily. Find the cheapest card in your wallet for each country.</p>
+          </article>
+          <article class="tool">
+            <div class="num">02</div>
+            <h3>Pay in which currency?</h3>
+            <p>The card machine offers to charge you in pounds. Type in the two prices and see what saying yes would cost you.</p>
+          </article>
+          <article class="tool">
+            <div class="num">03</div>
+            <h3>Is now a good time?</h3>
+            <p>"Better than 82% of days in five years." Where today's rate sits in history, plus alerts when it moves. Statistics, never forecasts.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="pledge" aria-labelledby="pledge-h">
+        <h2 id="pledge-h">Our independence pledge</h2>
+        <ol>
+          <li><div><strong>We never sell currency or transfers.</strong><span>We have nothing to push you towards.</span></div></li>
+          <li><div><strong>Rankings can't be bought.</strong><span>Ordered by what you'd pay, whether or not we earn anything from it.</span></div></li>
+          <li><div><strong>Our method is public.</strong><span>Every number links to where it came from and when.</span></div></li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site">
+      <span>© 2026 exchangedmoney. Nothing here is financial advice.</span>
+      <nav><a href="/privacy.html">Privacy</a><a href="/collector.html">Our data collector</a></nav>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const form = document.querySelector("form.signup");
+      const status = form.querySelector(".status");
+      const button = form.querySelector("button");
+      const say = (text, ok) => { status.textContent = text; status.className = "status " + (ok ? "ok" : "err"); };
+      if (new URLSearchParams(location.search).get("signup") === "invalid") say("That email address doesn't look right.", false);
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const email = String(data.get("email") || "").trim();
+        if (!email || !form.email.checkValidity()) return say("That email address doesn't look right.", false);
+        button.disabled = true;
+        try {
+          const res = await fetch(form.action, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email, interests: data.getAll("interests"), website: data.get("website") }),
+          });
+          if (res.ok) { form.reset(); say("Thanks. Check your inbox to confirm when we launch.", true); }
+          else say(res.status === 400 ? "That email address doesn't look right." : "Something went wrong. Please try again.", false);
+        } catch { say("Couldn't reach us. Please try again.", false); }
+        finally { button.disabled = false; }
+      });
+    })();
+  </script>
+</body>
+</html>
