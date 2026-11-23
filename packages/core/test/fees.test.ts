@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  CARD_PRODUCTS, checkDisclosure, disclosedMarkup, estimateNetworkMargins, priceSpend, priceTrip, productById, schedulePct, staleProducts,
+  CARD_PRODUCTS, bestCardPerSpend, checkDisclosure, disclosedMarkup, estimateNetworkMargins, priceSpend, priceTrip, productById, schedulePct, staleProducts,
   type CardProduct, type IssuerMarkup, type PricingContext,
 } from "../src/index.js";
 
@@ -152,6 +152,40 @@ describe("typical network margins", () => {
     expect(adv.check.status).toBe("conflict");
     expect(adv.lines.at(-1)!.detail).toMatch(/typical for Visa in EUR, from 6 issuer disclosures/);
     expect(adv.totalGBP).toBeCloseTo(other.totalGBP, 1); // same schedule, near-same cost
+  });
+});
+
+describe("cheapest card per spend", () => {
+  const freeCash: CardProduct = {
+    id: "test/free-cash", issuer: "Test", name: "£100 a month fee-free cash, then 3%", cardType: "debit", segment: "personal", networks: ["mastercard"],
+    markupMatch: { purchase: "x", atm: "x" },
+    fees: [
+      { kind: "percent", name: "Purchase fee", pct: 1, appliesTo: ["purchase"], inDisclosedMarkup: false },
+      { kind: "percent", name: "Cash fee", pct: 3, appliesTo: ["atm"], inDisclosedMarkup: false, allowance: { gbp: 100, period: "month" } },
+    ],
+    caveats: [], sources: [{ label: "t", url: "https://e.test", checkedAt: "2026-11-23" }],
+  };
+  const flat: CardProduct = { ...freeCash, id: "test/flat", name: "2% on everything", fees: [{ kind: "percent", name: "Fee", pct: 2, appliesTo: ["purchase", "atm"], inDisclosedMarkup: false }] };
+  const base = { toGBP: (_c: string, a: number) => a, markups: [] };
+  const choices = [{ card: flat, network: "mastercard" as const }, { card: freeCash, network: "mastercard" as const }];
+
+  it("picks per spend and lets a card's allowance run out", () => {
+    const { assignments, totalGBP } = bestCardPerSpend(
+      [
+        { context: "atm", currency: "GBP", amount: 100, date: "2026-12-01" },
+        { context: "atm", currency: "GBP", amount: 100, date: "2026-12-02" },
+        { context: "purchase", currency: "GBP", amount: 50, date: "2026-12-02" },
+      ],
+      choices, base,
+    );
+    expect(assignments.map((a) => a.choice.card.id)).toEqual(["test/free-cash", "test/flat", "test/free-cash"]);
+    expect(assignments.map((a) => a.cost.totalGBP)).toEqual([0, 2, 0.5]);
+    expect(assignments[1]!.options.map((o) => o.totalGBP)).toEqual([2, 3]); // free-cash allowance used up
+    expect(totalGBP).toBe(2.5);
+  });
+
+  it("handles no cards", () => {
+    expect(bestCardPerSpend([{ context: "atm", currency: "GBP", amount: 1 }], [], base)).toEqual({ assignments: [], totalGBP: 0 });
   });
 });
 

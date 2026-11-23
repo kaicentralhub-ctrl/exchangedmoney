@@ -277,6 +277,41 @@ export function priceTrip(spends: readonly Spend[], card: CardProduct, ctx: Pric
   };
 }
 
+export interface CardChoice {
+  card: CardProduct;
+  network: CardNetwork;
+}
+
+export interface Assignment {
+  /** The spend priced on the chosen card. */
+  cost: SpendCost;
+  choice: CardChoice;
+  /** What each card would have cost for this spend, given its allowances used so far. */
+  options: { choice: CardChoice; totalGBP: number }[];
+}
+
+/**
+ * The cheapest card for each spend, in date order. Each card keeps its own allowance usage,
+ * so a card's fee-free allowance is used up only by the spends assigned to it. Greedy: the
+ * cheapest card now, which is optimal unless allowances would be better saved for later.
+ */
+export function bestCardPerSpend(spends: readonly Spend[], choices: readonly CardChoice[], base: Omit<PricingContext, "network">): { assignments: Assignment[]; totalGBP: number } {
+  if (choices.length === 0) return { assignments: [], totalGBP: 0 };
+  const usages: UsageState[] = choices.map(() => new Map());
+  const ordered = [...spends].sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
+  const assignments = ordered.map((spend) => {
+    const trial = choices.map((choice, i) => priceSpend(spend, choice.card, { ...base, network: choice.network }, new Map(usages[i])));
+    let best = 0;
+    trial.forEach((t, i) => {
+      if (t.totalGBP < trial[best]!.totalGBP) best = i;
+    });
+    // Commit: price again against the real usage so the chosen card's allowances advance.
+    const cost = priceSpend(spend, choices[best]!.card, { ...base, network: choices[best]!.network }, usages[best]);
+    return { cost, choice: choices[best]!, options: choices.map((choice, i) => ({ choice, totalGBP: trial[i]!.totalGBP })) };
+  });
+  return { assignments, totalGBP: round2(assignments.reduce((a, x) => a + x.cost.totalGBP, 0)) };
+}
+
 /** Fee schedules last checked more than `days` ago. */
 export function staleProducts(products: readonly CardProduct[], now: Date, days = 90): { product: CardProduct; checkedAt: string }[] {
   const limit = now.getTime() - days * 86_400_000;

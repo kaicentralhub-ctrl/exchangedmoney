@@ -1,9 +1,4 @@
 const PLANS: Record<string, { title: string; what: string; needs: string[] }> = {
-  "/trip": {
-    title: "Trip",
-    what: "Add the cards you carry and a list of what you expect to spend and withdraw. See what each card would cost and which card is cheapest for each kind of transaction, including what happens if you accept paying in pounds abroad.",
-    needs: ["Card markups (collecting now)", "Fixed and percentage fees per card (fee model, next)", "Card network daily rates"],
-  },
   "/receipt": {
     title: "Receipt",
     what: "Enter what you paid and what you got. See how far the rate was from mid-market, where that sits in history, and what it cost you.",

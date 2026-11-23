@@ -15,6 +15,7 @@ import { Home } from "./workspaces/Home.js";
 import { Markets } from "./workspaces/Markets.js";
 import { Planned } from "./workspaces/Planned.js";
 import { Sources } from "./workspaces/Sources.js";
+import { Trip } from "./workspaces/Trip.js";
 
 const online = signal(navigator.onLine);
 addEventListener("online", () => ((online.value = true), void loadManifest()));
@@ -26,7 +27,8 @@ function View() {
   if (p === "/cards") return <Cards />;
   if (p === "/markets") return <Markets />;
   if (p === "/sources") return <Sources />;
-  if (p === "/trip" || p === "/receipt") return <Planned path={p} />;
+  if (p === "/trip") return <Trip />;
+  if (p === "/receipt") return <Planned path={p} />;
   return (
     <section class="ws">
       <h1>Not found</h1>

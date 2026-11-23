@@ -52,3 +52,13 @@ export function windowStats(series: SeriesPoint[], windows: { label: string; yea
     return [{ label: w.label, days: vals.length, betterThan: percentileRank(vals, last.rate, true), low: Math.min(...vals), high: Math.max(...vals) }];
   });
 }
+
+/** GBP value of an amount at the reference rate, from euro-based rates; null if either rate is missing. */
+export function gbpConverter(eur: Map<string, EuroRate>): (currency: string, amount: number) => number | null {
+  const g = eur.get("GBP")?.rate;
+  return (currency, amount) => {
+    if (currency === "GBP") return amount;
+    const r = eur.get(currency)?.rate;
+    return g && r ? (amount / r) * g : null;
+  };
+}

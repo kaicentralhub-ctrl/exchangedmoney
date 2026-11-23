@@ -217,3 +217,36 @@ table.mini { border-collapse: collapse; width: auto; min-width: 36rem; font-vari
 .notes li { margin: 0.2rem 0; }
 .grid .pill { margin-left: 0.5rem; vertical-align: 1px; }
 .mini td.muted { font-size: 0.85rem; }
+
+/* ---------- trip ---------- */
+.h2.step { margin-top: 1.6rem; }
+.toolbar.plan { border-bottom: 0; margin-bottom: 0.4rem; }
+.toolbar.slim { border: 0; padding: 0.4rem 0; margin: 0; }
+.field.tiny input { min-width: 0; width: 5rem; }
+.field.narrow input[type="date"] { width: auto; }
+button.primary { border: 1px solid var(--ink); background: var(--ink); color: var(--paper); border-radius: 6px; padding: 0.35rem 0.9rem; cursor: pointer; align-self: flex-end; }
+button.primary:hover { background: var(--accent); border-color: var(--accent); }
+.spends-head { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin: 0.3rem 0 0.6rem; color: var(--ink-2); }
+.grid.edit td { padding: 0.25rem 0.5rem; }
+.grid.edit tbody tr { cursor: default; }
+.grid.edit input, .grid.edit select { font-size: 0.88rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 0.2rem 0.35rem; color: var(--ink); }
+.grid.edit input[type="number"] { width: 6.5rem; text-align: right; }
+.ws-actions.under.start { justify-content: flex-start; }
+.wallet { margin-top: 0.4rem; }
+.wallet-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+.wallet fieldset { border: 1px solid var(--rule); border-radius: 8px; padding: 0.5rem 0.8rem 0.7rem; margin: 0; }
+.wallet legend { font-weight: 600; padding: 0 0.3rem; }
+.wallet-item { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
+.wallet-item select { font-size: 0.85rem; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); color: var(--ink); }
+.wallet-list .fine { grid-column: 1 / -1; margin: 0; }
+.plan-box { border: 1px solid var(--rule); border-radius: 8px; padding: 0.9rem 1rem; margin-top: 1rem; background: var(--paper-2); }
+.plan-box h3 { margin: 0 0 0.5rem; font: 500 1.1rem/1.2 var(--serif); }
+.plan-box .sub { margin-bottom: 0.3rem; font-size: 0.92rem; }
+@media (max-width: 900px) {
+  .grid.edit input[type="number"] { width: 4.5rem; }
+  .spends-head { flex-direction: column; gap: 0.3rem; }
+}
+.plan-box, .breakdown { overflow-x: auto; }
+@media (max-width: 900px) {
+  table.mini { min-width: 0; width: 100%; }
+}
