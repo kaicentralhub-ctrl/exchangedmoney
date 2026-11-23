@@ -9,3 +9,5 @@ export { parseHsbcCbpr, parsePercent, parseLastUpdated, networkOf, cardTypeOf } 
 export { parseCbprPdfLines, productsFor, parseUsTimestamp } from "./parsers/cbpr-pdf.js";
 export { pdfToLines } from "./pdf.js";
 export * from "./bundles.js";
+export * from "./fees.js";
+export * from "./tariffs.js";

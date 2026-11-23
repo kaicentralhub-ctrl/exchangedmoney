@@ -1,7 +1,7 @@
 import { sourcesFor } from "@exm/core";
 import { collectSource, type CollectDeps } from "./collect.js";
 import { CRON_JOBS, type Env } from "./env.js";
-import { checkHealth, healthMessage } from "./health.js";
+import { checkHealth, healthMessage, tariffReminder } from "./health.js";
 import { notify } from "./notify.js";
 import { R2PublishStore, publishBundles, serveData } from "./publish.js";
 import { D1Warehouse, R2RawStore } from "./storage.js";
@@ -22,6 +22,8 @@ async function runJob(job: "daily-morning" | "daily-ecb" | "health", env: Env): 
   if (job === "health") {
     const message = healthMessage(await checkHealth(d.warehouse, d.now()));
     if (message) await notify(env.NTFY_URL, "exchangedmoney: collector stale", message);
+    const reminder = tariffReminder(d.now());
+    if (reminder) await notify(env.NTFY_URL, "exchangedmoney: fee schedules due a re-check", reminder);
     return;
   }
   // One source at a time keeps us polite and well inside subrequest limits.

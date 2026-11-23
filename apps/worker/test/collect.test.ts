@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { sourceById, type SourceDefinition } from "@exm/core";
 import { describe, expect, it } from "vitest";
 import { collectSource, USER_AGENT } from "../src/collect.js";
-import { checkHealth, healthMessage } from "../src/health.js";
+import { checkHealth, healthMessage, tariffReminder } from "../src/health.js";
 import { clock, fakeFetch, MemoryRawStore, MemoryWarehouse } from "./fakes.js";
 
 const coreFixture = (name: string) =>
@@ -117,3 +117,13 @@ describe("health", () => {
     expect(healthMessage(report)).toMatch(/issuer-hsbc-uk: no successful run yet/);
   });
 });
+
+describe("fee schedule reminders", () => {
+  const products = [{ id: "x/y", issuer: "Bank", name: "Card", cardType: "debit", segment: "personal", networks: ["visa"], markupMatch: { purchase: "x", atm: "x" }, fees: [], caveats: [], sources: [{ label: "l", url: "https://e.test", checkedAt: "2026-01-05" }] }] as const;
+  it("lists overdue schedules on Mondays only", () => {
+    expect(tariffReminder(new Date("2026-11-23T09:00:00Z"), products as never)).toMatch(/Bank: Card \(last checked 2026-01-05\)/); // a Monday
+    expect(tariffReminder(new Date("2026-11-24T09:00:00Z"), products as never)).toBeNull();
+    expect(tariffReminder(new Date("2026-02-02T09:00:00Z"), products as never)).toBeNull(); // not yet 90 days
+  });
+});
+

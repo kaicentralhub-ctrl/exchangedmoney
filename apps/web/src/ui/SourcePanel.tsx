@@ -34,12 +34,21 @@ export function SourcePanel() {
             </>
           )}
         </dd>
-        <dt>Publisher's timestamp</dt>
-        <dd>{local(p.publishedAt)}</dd>
-        <dt>Collected by us</dt>
-        <dd>{when(p.collectedAt)}</dd>
-        <dt>Archived copy</dt>
-        <dd>{p.rawKey ? <code>{p.rawKey}</code> : "not recorded (historical file)"}</dd>
+        {p.checkedAt ? (
+          <>
+            <dt>Checked by us</dt>
+            <dd>{local(p.checkedAt)} (read from the issuer's page; re-checked at least every 90 days)</dd>
+          </>
+        ) : (
+          <>
+            <dt>Publisher's timestamp</dt>
+            <dd>{local(p.publishedAt)}</dd>
+            <dt>Collected by us</dt>
+            <dd>{when(p.collectedAt)}</dd>
+            <dt>Archived copy</dt>
+            <dd>{p.rawKey ? <code>{p.rawKey}</code> : "not recorded (historical file)"}</dd>
+          </>
+        )}
         {p.sha256 && (
           <>
             <dt>SHA-256</dt>
@@ -52,6 +61,7 @@ export function SourcePanel() {
         )}
       </dl>
       {p.note && <p class="note">{p.note}</p>}
+      {s.extra}
       <p class="fine">
         We archive every page and file exactly as fetched before reading any numbers from it, and never edit the copy. Figures are statistics, not
         financial advice.

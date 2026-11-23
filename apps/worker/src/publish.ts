@@ -3,7 +3,7 @@
  * Hashed files are written once and never changed; only the manifest is replaced.
  */
 import {
-  MANIFEST_PATH, SOURCES, buildHistoryBundle, buildManifest, buildMarkupsBundle, buildRatesBundle, sourceById, toBundleFile,
+  CARD_PRODUCTS, MANIFEST_PATH, SOURCES, buildHistoryBundle, buildTariffsBundle, buildManifest, buildMarkupsBundle, buildRatesBundle, sourceById, toBundleFile,
   type BundleFile, type Manifest, type ManifestEntry, type Provenance, type RateObservation, type SeriesPoint, type StoredMarkup,
 } from "@exm/core";
 
@@ -84,6 +84,9 @@ export async function publishBundles(store: PublishStore, q: BundleQueries, now:
     rateProv[source] = provenanceFor(run, source, rows.map((r) => r.rateDate).sort().at(-1) ?? null);
   }
   files.push(await toBundleFile("rates", buildRatesBundle(rates, rateProv)));
+
+  // Fee schedules: curated in core, versioned with the code.
+  files.push(await toBundleFile("tariffs", buildTariffsBundle(CARD_PRODUCTS)));
 
   // Reference history (ECB, euro base): rebuilt on the ECB job, otherwise carried over.
   let carried: Record<string, ManifestEntry> = {};

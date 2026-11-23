@@ -1,8 +1,9 @@
 import { signal } from "@preact/signals";
+import type { ComponentChildren } from "preact";
 import type { Provenance } from "@exm/core/bundles";
 
 /** The source panel: which number's origin is being shown. */
-export const sourcePanel = signal<{ title: string; provenance: Provenance; detail?: string } | null>(null);
+export const sourcePanel = signal<{ title: string; provenance: Provenance; detail?: string; extra?: ComponentChildren } | null>(null);
 export const commandBarOpen = signal(false);
 export const shortcutsOpen = signal(false);
 

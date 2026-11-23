@@ -8,6 +8,7 @@
  */
 import type { CardNetwork, CardType, CustomerSegment, IssuerMarkup, MarkupContext, RateObservation } from "./types.js";
 import { sha256Hex } from "./snapshot.js";
+import type { CardProduct } from "./fees.js";
 
 export const BUNDLE_SCHEMA = 1;
 export const MANIFEST_PATH = "data/manifest.json";
@@ -25,6 +26,8 @@ export interface Provenance {
   rawKey: string | null;
   sha256: string | null;
   note?: string;
+  /** For curated data (fee schedules): the date we last checked the page by hand. */
+  checkedAt?: string;
 }
 
 /* ---------------- markups ---------------- */
@@ -134,6 +137,18 @@ export function decodeSeries(s: { start: string; gaps: readonly number[]; rates:
 
 export function buildHistoryBundle(base: string, quote: string, points: readonly SeriesPoint[], provenance: Provenance): HistoryBundle {
   return { schema: BUNDLE_SCHEMA, kind: "history", base, quote, provenance, ...encodeSeries(points) };
+}
+
+/* ---------------- fee schedules ---------------- */
+
+export interface TariffsBundle {
+  schema: number;
+  kind: "tariffs";
+  products: CardProduct[];
+}
+
+export function buildTariffsBundle(products: readonly CardProduct[]): TariffsBundle {
+  return { schema: BUNDLE_SCHEMA, kind: "tariffs", products: [...products].sort((a, b) => cmp(a.id, b.id)) };
 }
 
 /* ---------------- manifest ---------------- */

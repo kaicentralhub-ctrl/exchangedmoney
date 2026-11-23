@@ -3,7 +3,7 @@ import { shortcutsOpen, type Command } from "../state/ui.js";
 
 export const WORKSPACES = [
   { path: "/markets", label: "Markets", key: "m", ready: true, blurb: "Rates, cross rates and how today compares with history" },
-  { path: "/cards", label: "Cards", key: "c", ready: true, blurb: "What each card charges over the reference rate" },
+  { path: "/cards", label: "Cards", key: "c", ready: true, blurb: "What each card really costs abroad, fee by fee" },
   { path: "/trip", label: "Trip", key: "t", ready: false, blurb: "Simulate a trip across your cards" },
   { path: "/receipt", label: "Receipt", key: "r", ready: false, blurb: "Check a rate you were given" },
   { path: "/sources", label: "Sources", key: "s", ready: true, blurb: "Every source, when we last collected it" },

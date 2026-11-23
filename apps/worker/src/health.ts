@@ -1,4 +1,4 @@
-import { SOURCES, type SourceDefinition } from "@exm/core";
+import { CARD_PRODUCTS, SOURCES, staleProducts, type CardProduct, type SourceDefinition } from "@exm/core";
 import type { Warehouse } from "./storage.js";
 
 export interface SourceHealth {
@@ -26,4 +26,13 @@ export function healthMessage(report: SourceHealth[]): string | null {
     r.lastSuccess ? `${r.source}: last success ${Math.round(r.ageHours ?? 0)}h ago` : `${r.source}: no successful run yet`,
   );
   return `A missed day of collection is permanent.\n${lines.join("\n")}`;
+}
+
+/** Weekly (Mondays) reminder listing fee schedules not re-checked for 90 days. */
+export function tariffReminder(now: Date, products: readonly CardProduct[] = CARD_PRODUCTS): string | null {
+  if (now.getUTCDay() !== 1) return null;
+  const due = staleProducts(products, now);
+  if (due.length === 0) return null;
+  const lines = due.map(({ product, checkedAt }) => `${product.issuer}: ${product.name} (last checked ${checkedAt})`);
+  return `Re-check these fee schedules against the issuers' pages, then update checkedAt in packages/core/src/tariffs.ts:\n${lines.join("\n")}`;
 }

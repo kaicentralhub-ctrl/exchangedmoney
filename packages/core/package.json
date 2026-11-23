@@ -10,7 +10,9 @@
     "./bundles": "./src/bundles.ts",
     "./math": "./src/math.ts",
     "./currency": "./src/currency.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./fees": "./src/fees.ts",
+    "./tariffs": "./src/tariffs.ts"
   },
   "dependencies": {
     "node-html-parser": "^7.0.1",

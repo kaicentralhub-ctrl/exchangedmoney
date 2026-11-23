@@ -42,7 +42,7 @@ describe("publishBundles", () => {
     const store = new MemoryPublishStore();
     const { manifest } = await publishBundles(store, queries(), new Date("2026-11-23T06:01:00Z"), { history: true });
 
-    expect(Object.keys(manifest.files)).toEqual(["history/EUR-GBP", "history/EUR-USD", "markups", "rates"]);
+    expect(Object.keys(manifest.files)).toEqual(["history/EUR-GBP", "history/EUR-USD", "markups", "rates", "tariffs"]);
     expect(store.json<Manifest>(MANIFEST_PATH).generatedAt).toBe("2026-11-23T06:01:00.000Z");
 
     const mk = store.json<MarkupsBundle>(manifest.files.markups!.path);

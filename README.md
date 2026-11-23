@@ -88,15 +88,25 @@ open http://localhost:8787/app/
 pnpm dev:web       # http://localhost:5173/app/
 ```
 
+### Fee schedules
+
+`packages/core/src/tariffs.ts` holds each card's fee schedule, read by hand from the issuer's own pages, with the page URLs and the date last checked. `packages/core/src/fees.ts` prices any spend or withdrawal against them:
+
+- Fees come from the schedule (it's contractual): percentages with minimums and maximums, fixed fees, and daily or monthly fee-free allowances.
+- The issuer's published markup over ECB is a cross-check. Where it agrees with the schedule, the difference estimates the card network's margin; where it doesn't, the app says so and prices from the schedule.
+- The network margin belongs to the network and currency, so cards without a usable disclosure get the median from cards that have one.
+
+The health check sends a reminder each Monday listing any schedule not re-checked for 90 days. To update one: re-read the pages, change the figures and `checkedAt`, and run the tests.
+
 ### How the app gets its data
 
-After every collection run the Worker publishes **data bundles** to the `exm-published` bucket: a small `data/manifest.json` plus content-hashed files (`markups`, `rates`, `history/EUR-XXX`). Hashed files are cached forever and never rewritten; only the manifest changes. Each bundle carries provenance (source, collected-at, publisher's timestamp, archived snapshot key and hash), which the app shows in its source panel. ECB history bundles are rebuilt on the 16:30 ECB job.
+After every collection run the Worker publishes **data bundles** to the `exm-published` bucket: a small `data/manifest.json` plus content-hashed files (`markups`, `rates`, `tariffs`, `history/EUR-XXX`). Hashed files are cached forever and never rewritten; only the manifest changes. Each bundle carries provenance (source, collected-at, publisher's timestamp, archived snapshot key and hash), which the app shows in its source panel. ECB history bundles are rebuilt on the 16:30 ECB job.
 
 ## Not done yet (on purpose)
 
 - **Sign-up emails.** Subscribers are stored as `pending`; nothing is sent until a provider is wired up for double opt-in.
 - **Rate limiting on `/api/subscribe`.** There's a honeypot; add a Cloudflare rate-limiting rule before promoting the page.
-- **The rest of the app.** Cards and Markets are built; Trip and Receipt need the fee model first. Search-engine pages per currency pair, issuer and card come with Phase 1.
+- **The rest of the app.** Cards (full cost and published markups) and Markets are built; Trip and Receipt are next, on the fee model. Business card fee schedules aren't added yet. Search-engine pages per currency pair, issuer and card come with Phase 1.
 - **Workers plan.** Parsing PDFs and rebuilding history bundles needs more CPU time than the Workers free plan allows per invocation; budget for Workers Paid before going live.
 
 The build and business plan lives in the claude.ai project ("exchangedmoney.com — Build & Business Plan").

@@ -210,3 +210,10 @@ table.mini { border-collapse: collapse; width: auto; min-width: 36rem; font-vari
   .hide-sm { display: none; }
   .grid td, .grid th { padding-left: 0.5rem; padding-right: 0.5rem; }
 }
+
+/* ---------- fee breakdowns ---------- */
+.ws-actions.under { margin-top: 0.6rem; justify-content: flex-end; }
+.notes { margin: 0.7rem 0 0; padding-left: 1.1rem; color: var(--ink-2); max-width: 52rem; }
+.notes li { margin: 0.2rem 0; }
+.grid .pill { margin-left: 0.5rem; vertical-align: 1px; }
+.mini td.muted { font-size: 0.85rem; }
