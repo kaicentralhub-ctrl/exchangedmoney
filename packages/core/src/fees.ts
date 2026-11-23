@@ -20,8 +20,15 @@ export interface Allowance {
   gbp?: number;
   /** Fee-free number of transactions per period. */
   count?: number;
-  period: "day" | "month";
+  /**
+   * day / month: calendar periods. 30-days-from-first: a window that opens with the first
+   * transaction it covers and lasts 30 days (Monzo's rule), then reopens with the next one.
+   */
+  period: "day" | "month" | "30-days-from-first";
 }
+
+/** Currencies of the European Economic Area (Bulgaria kept for issuers that still list the lev). */
+export const EEA_CURRENCIES = ["EUR", "BGN", "CZK", "DKK", "HUF", "ISK", "NOK", "PLN", "RON", "SEK"] as const;
 
 interface FeeBase {
   /** As the issuer names it, e.g. "Non-sterling transaction fee". */
@@ -30,7 +37,12 @@ interface FeeBase {
   /** Whether the issuer's published markup over ECB includes this fee's percentage. */
   inDisclosedMarkup: boolean;
   allowance?: Allowance;
+  /** Limit the rule to some currencies (e.g. outside the EEA only). Absent = every currency. */
+  currencies?: { only?: readonly string[]; except?: readonly string[] };
 }
+
+const appliesToCurrency = (rule: FeeRule, currency: string) =>
+  (!rule.currencies?.only || rule.currencies.only.includes(currency)) && !rule.currencies?.except?.includes(currency);
 
 export type FeeRule =
   | (FeeBase & { kind: "percent"; pct: number; minGBP?: number; maxGBP?: number })
@@ -130,8 +142,8 @@ export function disclosedMarkup(card: CardProduct, markups: readonly IssuerMarku
 }
 
 /** The percentage the schedule says should appear in the disclosure for this context. */
-export function schedulePct(card: CardProduct, context: SpendContext): number {
-  return card.fees.filter((f) => f.kind === "percent" && f.inDisclosedMarkup && f.appliesTo.includes(context)).reduce((a, f) => a + (f as { pct: number }).pct, 0);
+export function schedulePct(card: CardProduct, context: SpendContext, currency?: string): number {
+  return card.fees.filter((f) => f.kind === "percent" && f.inDisclosedMarkup && f.appliesTo.includes(context) && (!currency || appliesToCurrency(f, currency))).reduce((a, f) => a + (f as { pct: number }).pct, 0);
 }
 
 export function checkDisclosure(disclosed: number | null, scheduled: number): DisclosureCheck {
@@ -141,24 +153,30 @@ export function checkDisclosure(disclosed: number | null, scheduled: number): Di
   return { status: ok ? "consistent" : "conflict", disclosedPct: disclosed, schedulePct: round2(scheduled) };
 }
 
-type UsageState = Map<string, { gbp: number; count: number }>;
+type UsageState = Map<string, { gbp: number; count: number; start?: string }>;
 
-function periodKey(rule: FeeRule, ruleIndex: number, date: string | undefined): string {
-  const p = rule.allowance?.period;
-  const d = date ?? "undated";
-  return `${ruleIndex}:${p === "day" ? d.slice(0, 10) : d.slice(0, 7)}`;
-}
+const plusDays = (date: string, n: number) => new Date(Date.parse(`${date}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 /** How much of this spend (in GBP) is above the rule's allowance, updating usage. */
 function chargeable(rule: FeeRule, ruleIndex: number, gbp: number, date: string | undefined, usage: UsageState): number {
   const a = rule.allowance;
   if (!a) return gbp;
-  const key = periodKey(rule, ruleIndex, date);
-  const used = usage.get(key) ?? { gbp: 0, count: 0 };
+  const d = date ?? "undated";
+  let key: string;
+  let used: { gbp: number; count: number; start?: string };
+  if (a.period === "30-days-from-first") {
+    key = `${ruleIndex}:window`;
+    const w = usage.get(key);
+    const expired = w?.start && date && w.start !== "undated" && date >= plusDays(w.start, 30);
+    used = !w || expired ? { gbp: 0, count: 0, start: d } : w;
+  } else {
+    key = `${ruleIndex}:${a.period === "day" ? d.slice(0, 10) : d.slice(0, 7)}`;
+    used = usage.get(key) ?? { gbp: 0, count: 0 };
+  }
   let free = gbp;
   if (a.count !== undefined && used.count >= a.count) free = 0;
   if (a.gbp !== undefined) free = Math.min(free, Math.max(0, a.gbp - used.gbp));
-  usage.set(key, { gbp: used.gbp + gbp, count: used.count + 1 });
+  usage.set(key, { ...used, gbp: used.gbp + gbp, count: used.count + 1 });
   return gbp - free;
 }
 
@@ -167,7 +185,7 @@ export function priceSpend(spend: Spend, card: CardProduct, ctx: PricingContext,
   const notes: string[] = [];
   const baseGBP = ctx.toGBP(spend.currency, spend.amount);
   const disclosed = disclosedMarkup(card, ctx.markups, spend.context, spend.currency, ctx.network);
-  const scheduled = schedulePct(card, spend.context);
+  const scheduled = schedulePct(card, spend.context, spend.currency);
   const check = checkDisclosure(disclosed, scheduled);
   if (baseGBP === null) {
     return { spend, baseGBP, lines: [], totalGBP: 0, effectivePct: 0, check, notes: [`No reference rate for ${spend.currency} yet, so this can't be priced.`] };
@@ -175,7 +193,7 @@ export function priceSpend(spend: Spend, card: CardProduct, ctx: PricingContext,
 
   const lines: CostLine[] = [];
   card.fees.forEach((rule, i) => {
-    if (!rule.appliesTo.includes(spend.context)) return;
+    if (!rule.appliesTo.includes(spend.context) || !appliesToCurrency(rule, spend.currency)) return;
     const over = chargeable(rule, i, baseGBP, spend.date, usage);
     if (rule.kind === "percent") {
       if (over <= 0) return void notes.push(`${rule.name}: within the fee-free allowance.`);
@@ -237,7 +255,7 @@ export function estimateNetworkMargins(products: readonly CardProduct[], markups
     for (const network of p.networks)
       for (const context of ["purchase", "atm"] as const)
         for (const currency of currencies) {
-          const check = checkDisclosure(disclosedMarkup(p, markups, context, currency, network), schedulePct(p, context));
+          const check = checkDisclosure(disclosedMarkup(p, markups, context, currency, network), schedulePct(p, context, currency));
           if (check.status !== "consistent") continue;
           const key = `${network}|${currency}`;
           samples.set(key, [...(samples.get(key) ?? []), Math.max(0, check.disclosedPct - check.schedulePct)]);

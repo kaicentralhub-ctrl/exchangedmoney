@@ -189,3 +189,35 @@ describe("cheapest card per spend", () => {
   });
 });
 
+describe("Monzo-style allowances", () => {
+  const gbp: PricingContext = { toGBP: (_c, a) => a, markups: [], network: "mastercard" };
+  const cash = (date: string, currency: string, amount: number) => ({ context: "atm" as const, currency, amount, date });
+  const fee = (t: ReturnType<typeof priceTrip>) => t.spends.map((s) => s.totalGBP);
+
+  it("splits EEA and non-EEA allowances by currency, each in a 30-day window from the first withdrawal", () => {
+    const t = priceTrip(
+      [cash("2026-12-01", "EUR", 300), cash("2026-12-10", "EUR", 200), cash("2026-12-12", "USD", 250), cash("2027-01-02", "EUR", 100)],
+      productById("monzo/standard")!, gbp,
+    );
+    // EUR: 300 free, then 100 of 200 over £400 -> £3; USD: 50 over £200 -> £1.50; 2 Jan is 32 days after 1 Dec -> new window, free
+    expect(fee(t)).toEqual([0, 3, 1.5, 0]);
+  });
+
+  it("gives main-bank customers unlimited EEA cash", () => {
+    const t = priceTrip([cash("2026-12-01", "EUR", 1000), cash("2026-12-01", "THB", 300)], productById("monzo/main-bank")!, gbp);
+    expect(fee(t)).toEqual([0, 3]);
+  });
+
+  it("keeps a window open for 30 days, not to the calendar month", () => {
+    const t = priceTrip([cash("2026-11-20", "USD", 200), cash("2026-12-15", "USD", 100), cash("2026-12-20", "USD", 100)], productById("monzo/standard")!, gbp);
+    expect(fee(t)).toEqual([0, 3, 0]); // 15 Dec is day 25 of the window; 20 Dec opens a new one
+  });
+
+  it("applies NatWest Reward's fee to cash only", () => {
+    const pay = priceSpend({ context: "purchase", currency: "EUR", amount: 100 }, productById("natwest/debit-reward")!, { ...gbp, toGBP: (_c, a) => a });
+    const atm = priceSpend({ context: "atm", currency: "EUR", amount: 100 }, productById("natwest/debit-reward")!, { ...gbp, toGBP: (_c, a) => a });
+    expect(pay.lines.filter((l) => l.basis === "fee-schedule")).toEqual([]);
+    expect(atm.lines[0]).toMatchObject({ label: "Non-sterling transaction fee", gbp: 2.75 });
+  });
+});
+
