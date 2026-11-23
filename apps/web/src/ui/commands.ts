@@ -5,7 +5,7 @@ export const WORKSPACES = [
   { path: "/markets", label: "Markets", key: "m", ready: true, blurb: "Rates, cross rates and how today compares with history" },
   { path: "/cards", label: "Cards", key: "c", ready: true, blurb: "What each card really costs abroad, fee by fee" },
   { path: "/trip", label: "Trip", key: "t", ready: true, blurb: "Price a whole trip on your cards, and the cheapest card each time" },
-  { path: "/receipt", label: "Receipt", key: "r", ready: false, blurb: "Check a rate you were given" },
+  { path: "/receipt", label: "Receipt", key: "r", ready: true, blurb: "Check the rate you were given, and what the gap cost" },
   { path: "/sources", label: "Sources", key: "s", ready: true, blurb: "Every source, when we last collected it" },
 ] as const;
 

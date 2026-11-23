@@ -106,7 +106,7 @@ After every collection run the Worker publishes **data bundles** to the `exm-pub
 
 - **Sign-up emails.** Subscribers are stored as `pending`; nothing is sent until a provider is wired up for double opt-in.
 - **Rate limiting on `/api/subscribe`.** There's a honeypot; add a Cloudflare rate-limiting rule before promoting the page.
-- **The rest of the app.** Markets, Cards (full cost and published markups) and Trip are built; Receipt is next. Business card fee schedules aren't added yet. Search-engine pages per currency pair, issuer and card come with Phase 1.
+- **More of the app.** Markets, Cards, Trip and Receipt are built. Next: search-engine pages, more issuers, card network rates, and transfer providers. Business card fee schedules aren't added yet. Search-engine pages per currency pair, issuer and card come with Phase 1.
 - **Workers plan.** Parsing PDFs and rebuilding history bundles needs more CPU time than the Workers free plan allows per invocation; budget for Workers Paid before going live.
 
 The build and business plan lives in the claude.ai project ("exchangedmoney.com — Build & Business Plan").

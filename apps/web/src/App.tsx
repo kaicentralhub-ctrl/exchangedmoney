@@ -13,7 +13,7 @@ import { SourcePanel } from "./ui/SourcePanel.js";
 import { Cards } from "./workspaces/Cards.js";
 import { Home } from "./workspaces/Home.js";
 import { Markets } from "./workspaces/Markets.js";
-import { Planned } from "./workspaces/Planned.js";
+import { Receipt } from "./workspaces/Receipt.js";
 import { Sources } from "./workspaces/Sources.js";
 import { Trip } from "./workspaces/Trip.js";
 
@@ -28,7 +28,7 @@ function View() {
   if (p === "/markets") return <Markets />;
   if (p === "/sources") return <Sources />;
   if (p === "/trip") return <Trip />;
-  if (p === "/receipt") return <Planned path={p} />;
+  if (p === "/receipt") return <Receipt />;
   return (
     <section class="ws">
       <h1>Not found</h1>

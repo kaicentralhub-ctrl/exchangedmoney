@@ -250,3 +250,19 @@ button.primary:hover { background: var(--accent); border-color: var(--accent); }
 @media (max-width: 900px) {
   table.mini { min-width: 0; width: 100%; }
 }
+
+/* ---------- receipt ---------- */
+.receipt-form { display: grid; gap: 0.9rem; padding: 0.9rem 0 1rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.amounts { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; align-items: flex-end; }
+.amount { display: grid; gap: 0.2rem; }
+.amount-label { font-size: 0.78rem; color: var(--ink-3); }
+.amount-row { display: flex; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; background: var(--paper); }
+.amount-row input { width: 9rem; border: 0; padding: 0.45rem 0.6rem; font: 500 1.15rem/1 var(--sans); font-variant-numeric: tabular-nums; background: transparent; color: var(--ink); outline: none; }
+.amount-row select { border: 0; border-left: 1px solid var(--rule); background: var(--paper-2); padding: 0 0.5rem; font-weight: 600; color: var(--ink); }
+.amount-row:focus-within { border-color: var(--accent); }
+.verdict { border-left: 4px solid var(--rule); padding: 0.6rem 0 0.6rem 1rem; margin: 0 0 1rem; }
+.verdict.worse { border-color: var(--loss); }
+.verdict.better { border-color: var(--accent); }
+.verdict .headline { font: 500 1.4rem/1.25 var(--serif); margin: 0 0 0.35rem; }
+.stats .k .src { margin-left: 0.3rem; width: 1.15rem; height: 1.15rem; font-size: 0.7rem; vertical-align: 1px; }
+.grid tbody tr.static { cursor: default; }

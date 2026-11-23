@@ -11,3 +11,4 @@ export { pdfToLines } from "./pdf.js";
 export * from "./bundles.js";
 export * from "./fees.js";
 export * from "./tariffs.js";
+export * from "./receipt.js";

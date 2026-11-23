@@ -12,7 +12,8 @@
     "./currency": "./src/currency.ts",
     "./types": "./src/types.ts",
     "./fees": "./src/fees.ts",
-    "./tariffs": "./src/tariffs.ts"
+    "./tariffs": "./src/tariffs.ts",
+    "./receipt": "./src/receipt.ts"
   },
   "dependencies": {
     "node-html-parser": "^7.0.1",
