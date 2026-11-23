@@ -1,5 +1,7 @@
 export interface Env {
   SNAPSHOTS: R2Bucket;
+  /** Published data bundles served at /data/*. Hashed files are immutable; manifest.json is replaced. */
+  PUBLISHED: R2Bucket;
   DB: D1Database;
   ASSETS: Fetcher;
   COLLECTOR_VERSION: string;
