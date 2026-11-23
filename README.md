@@ -36,8 +36,9 @@ Rules the code enforces:
 | `ecb-daily` | ECB euro reference rates (XML) | 16:30 weekdays | Verified live 2026-11-23 (29 currencies) |
 | `frankfurter` | Frankfurter blended mid-market rates | 16:30 weekdays | Verified live 2026-11-23 (189 currencies; crypto tokens skipped) |
 | `issuer-hsbc-uk` | HSBC UK card markups over ECB (CBPR disclosure) | 06:00 daily | Verified live 2026-11-23 (140 markups: 10 currencies × personal/business × cash machine/purchase) |
+| `issuer-first-direct` | first direct card markups over ECB (CBPR disclosure PDF) | 06:00 daily | Verified live 2026-11-23 (154 markups; withdrawn currencies shown as #N/A are skipped) |
 
-Adding a source: add an entry to `packages/core/src/sources.ts`, write a parser with a fixture test, done. Next up: Nationwide, first direct, M&S Bank, Lloyds/Halifax/Bank of Scotland, Barclays, NatWest, Santander, Monzo, Starling, then Visa and Mastercard once permission is confirmed.
+Adding a source: add an entry to `packages/core/src/sources.ts`, write a parser with a fixture test, done. Next up: M&S Bank (its PDF has moved), Barclays, NatWest, Santander, Monzo, Starling, then Visa and Mastercard once permission is confirmed. Parked: Nationwide (figures sit behind a private API loaded by JavaScript). Excluded: Lloyds, Halifax and Bank of Scotland, whose pages sit behind bot challenges; we don't get around bot detection.
 
 ## Setup (once)
 

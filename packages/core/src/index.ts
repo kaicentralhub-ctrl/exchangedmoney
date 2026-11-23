@@ -6,3 +6,5 @@ export * from "./sources.js";
 export { parseEcbXml, parseEcbHistoryCsv } from "./parsers/ecb.js";
 export { parseFrankfurter } from "./parsers/frankfurter.js";
 export { parseHsbcCbpr, parsePercent, parseLastUpdated, networkOf, cardTypeOf } from "./parsers/hsbc-cbpr.js";
+export { parseCbprPdfLines, productsFor, parseUsTimestamp } from "./parsers/cbpr-pdf.js";
+export { pdfToLines } from "./pdf.js";

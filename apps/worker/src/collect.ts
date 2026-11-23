@@ -71,7 +71,13 @@ export async function collectSource(source: SourceDefinition, deps: CollectDeps)
     return finish(deps, { ...archived, status: "http_error", error: `HTTP ${response.status}` });
   }
 
-  const parsed = source.parse(new TextDecoder().decode(body));
+  let parsed;
+  try {
+    parsed = await source.parse(new TextDecoder().decode(body), new Uint8Array(body));
+  } catch (err) {
+    // Parsers shouldn't throw, but a corrupt PDF can make the PDF library do so. Raw is already safe.
+    return finish(deps, { ...archived, status: "parse_empty", warnings: [`parser threw: ${errorMessage(err)}`] });
+  }
   const status: RunStatus =
     parsed.observations.length + parsed.markups.length === 0 ? "parse_empty" : parsed.warnings.length ? "parse_warning" : "ok";
 

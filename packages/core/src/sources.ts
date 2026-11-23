@@ -1,6 +1,8 @@
 import { parseEcbXml } from "./parsers/ecb.js";
 import { parseFrankfurter } from "./parsers/frankfurter.js";
 import { parseHsbcCbpr } from "./parsers/hsbc-cbpr.js";
+import { parseCbprPdfLines } from "./parsers/cbpr-pdf.js";
+import { pdfToLines } from "./pdf.js";
 import type { ParseResult } from "./types.js";
 
 /** When a source is collected. Maps to cron triggers in the Worker. */
@@ -15,7 +17,8 @@ export interface SourceDefinition {
   maxAgeHours: number;
   /** Status of the parser against the live page. */
   verified: "live" | "fixture-only";
-  parse: (body: string) => ParseResult;
+  /** `body` is the response decoded as UTF-8; `bytes` the raw response (for PDFs). */
+  parse: (body: string, bytes: Uint8Array) => ParseResult | Promise<ParseResult>;
   notes?: string;
 }
 
@@ -52,6 +55,16 @@ export const SOURCES: readonly SourceDefinition[] = [
     maxAgeHours: 30,
     verified: "live",
     parse: (body) => parseHsbcCbpr(body, "HSBC UK"),
+  },
+  {
+    id: "issuer-first-direct",
+    label: "first direct card markups over ECB (CBPR disclosure PDF)",
+    url: "https://www.banking.firstdirect.com/content/dam/wpb/fsdt/en/documents/pdf/fd-country-cross-border-payments.sttl.pdf",
+    schedule: "daily-morning",
+    maxAgeHours: 30,
+    verified: "live",
+    parse: async (_body, bytes) => parseCbprPdfLines(await pdfToLines(bytes), "first direct"),
+    notes: "PDF; the timestamp in its footer is US-format and changes when first direct regenerates it.",
   },
 ];
 
