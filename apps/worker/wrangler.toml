@@ -1,0 +1,38 @@
+name = "exchangedmoney"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+# Static holding page. /api/* is handled by the Worker first.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "404-page"
+# /__scheduled is wrangler dev's test hook for cron jobs (inert in production).
+run_worker_first = ["/api/*", "/__scheduled"]
+
+# Raw snapshots: append-only by convention, never edited or deleted.
+[[r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "exm-snapshots"
+
+# Warehouse + subscribers. Create with: wrangler d1 create exm  (then paste the id below)
+[[d1_databases]]
+binding = "DB"
+database_name = "exm"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# Cron times are UTC.
+#   06:00 daily      -> issuer markup pages (banks update overnight)
+#   16:30 weekdays   -> ECB / Frankfurter (ECB publishes ~16:00 CET on TARGET working days)
+#   09:00 daily      -> health check; alerts via ntfy if any source is stale
+[triggers]
+crons = ["0 6 * * *", "30 16 * * 1-5", "0 9 * * *"]
+
+[vars]
+COLLECTOR_VERSION = "0.1.0"
+# Set NTFY_URL as a secret or var, e.g. https://ntfy.sh/your-private-topic or your self-hosted ntfy.
+NTFY_URL = ""
+
+[observability]
+enabled = true

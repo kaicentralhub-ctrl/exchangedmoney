@@ -1,0 +1,20 @@
+{
+  "name": "@exm/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "build:check": "wrangler deploy --dry-run --outdir dist",
+    "db:migrate:local": "wrangler d1 migrations apply exm --local",
+    "db:migrate:remote": "wrangler d1 migrations apply exm --remote"
+  },
+  "dependencies": {
+    "@exm/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251101.0",
+    "wrangler": "^4.50.0"
+  }
+}
