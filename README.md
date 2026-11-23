@@ -9,7 +9,8 @@ This repo is **Phase 0: the foundations.** It collects data from day one, becaus
 | Path | What it is |
 | --- | --- |
 | `packages/core` | Data model, rate maths (shortfall, loss, cross rates, percentiles), snapshot naming, and one parser per source, each tested against fixtures |
-| `apps/worker` | One Cloudflare Worker: scheduled collectors, `/api/subscribe`, `/api/health`, and the static holding page in `public/` |
+| `apps/worker` | One Cloudflare Worker: scheduled collectors, the data publisher (`/data/*`), `/api/subscribe`, `/api/health`, and the static holding page in `public/` |
+| `apps/web` | The app at `/app/` (Vite + Preact). Loads the published data bundles and does every calculation in the browser; works offline |
 | `apps/worker/migrations` | D1 schema: collector runs, rate observations, issuer markups, subscribers |
 | `scripts/backfill-ecb.ts` | Loads the ECB's full reference-rate history (1999 onwards) into D1 |
 
@@ -49,6 +50,7 @@ pnpm install
 cd apps/worker
 npx wrangler login
 npx wrangler r2 bucket create exm-snapshots
+npx wrangler r2 bucket create exm-published
 npx wrangler d1 create exm                 # paste the database_id into wrangler.toml
 pnpm db:migrate:remote
 npx wrangler secret put NTFY_URL           # e.g. https://ntfy.sh/<private-topic> or your own ntfy
@@ -79,12 +81,22 @@ pnpm dev           # http://localhost:8787
 curl "http://localhost:8787/__scheduled?cron=0+6+*+*+*"      # issuer markups
 curl "http://localhost:8787/__scheduled?cron=30+16+*+*+1-5"  # ECB + Frankfurter
 curl http://localhost:8787/api/health
+curl http://localhost:8787/data/manifest.json                # what the app loads
+# the app, built into the Worker's assets:
+open http://localhost:8787/app/
+# or with hot reload (proxies /data to the Worker on :8787), from the repo root:
+pnpm dev:web       # http://localhost:5173/app/
 ```
+
+### How the app gets its data
+
+After every collection run the Worker publishes **data bundles** to the `exm-published` bucket: a small `data/manifest.json` plus content-hashed files (`markups`, `rates`, `history/EUR-XXX`). Hashed files are cached forever and never rewritten; only the manifest changes. Each bundle carries provenance (source, collected-at, publisher's timestamp, archived snapshot key and hash), which the app shows in its source panel. ECB history bundles are rebuilt on the 16:30 ECB job.
 
 ## Not done yet (on purpose)
 
 - **Sign-up emails.** Subscribers are stored as `pending`; nothing is sent until a provider is wired up for double opt-in.
 - **Rate limiting on `/api/subscribe`.** There's a honeypot; add a Cloudflare rate-limiting rule before promoting the page.
-- **The real site.** Phase 1 (currency pages, Card Markup League, pay-in-which-currency calculator, percentiles and alerts) builds on this data.
+- **The rest of the app.** Cards and Markets are built; Trip and Receipt need the fee model first. Search-engine pages per currency pair, issuer and card come with Phase 1.
+- **Workers plan.** Parsing PDFs and rebuilding history bundles needs more CPU time than the Workers free plan allows per invocation; budget for Workers Paid before going live.
 
 The build and business plan lives in the claude.ai project ("exchangedmoney.com — Build & Business Plan").

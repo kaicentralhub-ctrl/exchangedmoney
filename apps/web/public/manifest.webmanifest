@@ -1,0 +1,11 @@
+{
+  "name": "exchangedmoney",
+  "short_name": "exchangedmoney",
+  "description": "What currency exchange really costs: card markups, rates and history, every number sourced.",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#f5f3ec",
+  "theme_color": "#0e5a47",
+  "icons": [{ "src": "/app/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

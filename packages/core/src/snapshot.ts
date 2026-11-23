@@ -40,6 +40,7 @@ export function extensionFor(contentType: string | null): string {
 /** Hex SHA-256 using Web Crypto (available in Workers and Node 20+). */
 export async function sha256Hex(data: ArrayBuffer | Uint8Array): Promise<string> {
   const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  // Cast: under the DOM lib, a Uint8Array over ArrayBufferLike is not accepted, though it works at runtime.
+  const digest = await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>);
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }

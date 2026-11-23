@@ -109,7 +109,7 @@ export async function publishBundles(store: PublishStore, q: BundleQueries, now:
   }
 
   const sources = await Promise.all(
-    SOURCES.map(async (s) => ({ id: s.id, label: s.label, url: s.url, lastSuccess: await q.lastSuccess(s.id) })),
+    SOURCES.map(async (s) => ({ id: s.id, label: s.label, url: s.url, maxAgeHours: s.maxAgeHours, lastSuccess: await q.lastSuccess(s.id) })),
   );
   const entries: Record<string, ManifestEntry> = { ...carried };
   for (const f of files) entries[f.name] = { path: f.path, sha256: f.sha256, bytes: f.bytes };

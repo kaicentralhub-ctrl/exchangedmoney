@@ -39,6 +39,15 @@ async function runJob(job: "daily-morning" | "daily-ecb" | "health", env: Env): 
   if (failures.length) await notify(env.NTFY_URL, "exchangedmoney: collection problem", failures.join("\n"));
 }
 
+/** The app is a single page: any /app/ address without a file extension gets its index page. */
+async function serveApp(request: Request, assets: Fetcher): Promise<Response> {
+  const res = await assets.fetch(request);
+  const url = new URL(request.url);
+  if (res.status !== 404 || /\.[a-z0-9]+$/i.test(url.pathname)) return res;
+  const index = await assets.fetch(new Request(new URL("/app/", url), request));
+  return new Response(index.body, { status: index.status, headers: index.headers });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -48,6 +57,8 @@ export default {
       return Response.json({ ok: report.every((r) => !r.stale), sources: report }, { headers: { "cache-control": "no-store" } });
     }
     if (url.pathname.startsWith("/data/")) return serveData(request, env.PUBLISHED);
+    if (url.pathname === "/app") return Response.redirect(`${url.origin}/app/${url.search}`, 301);
+    if (url.pathname.startsWith("/app/")) return serveApp(request, env.ASSETS);
     if (url.pathname.startsWith("/api/")) return Response.json({ ok: false, error: "not_found" }, { status: 404 });
     return env.ASSETS.fetch(request);
   },

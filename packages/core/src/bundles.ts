@@ -149,6 +149,8 @@ export interface SourceStatus {
   label: string;
   url: string;
   lastSuccess: string | null;
+  /** Older than this and the source counts as stale. */
+  maxAgeHours: number;
 }
 
 export interface Manifest {

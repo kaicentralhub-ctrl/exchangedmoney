@@ -6,10 +6,12 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p packages/core && tsc -p apps/worker && tsc -p scripts",
+    "typecheck": "tsc -p packages/core && tsc -p apps/worker && tsc -p apps/web && tsc -p scripts",
     "dev": "pnpm --filter @exm/worker dev",
     "deploy": "pnpm --filter @exm/worker deploy",
-    "backfill:ecb": "tsx scripts/backfill-ecb.ts"
+    "backfill:ecb": "tsx scripts/backfill-ecb.ts",
+    "dev:web": "pnpm --filter @exm/web dev",
+    "build": "pnpm --filter @exm/web build"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

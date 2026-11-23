@@ -7,3 +7,6 @@ dist/
 coverage/
 .DS_Store
 data/
+
+# Built by apps/web
+apps/worker/public/app/

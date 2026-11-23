@@ -65,7 +65,7 @@ describe("manifest", () => {
   it("indexes files by name and sorts sources", async () => {
     const rates = await toBundleFile("rates", buildRatesBundle([{ source: "ecb-daily", kind: "reference", base: "EUR", quote: "GBP", rate: 0.87, rateDate: "2026-11-20" }], {}));
     const hist = await toBundleFile("history/EUR-GBP", buildHistoryBundle("EUR", "GBP", [{ date: "2026-11-20", rate: 0.87 }], prov("ecb-daily")));
-    const man = buildManifest([rates, hist], [{ id: "z", label: "Z", url: "u", lastSuccess: null }, { id: "a", label: "A", url: "u", lastSuccess: null }], "2026-11-23T07:00:00Z");
+    const man = buildManifest([rates, hist], [{ id: "z", label: "Z", url: "u", lastSuccess: null, maxAgeHours: 30 }, { id: "a", label: "A", url: "u", lastSuccess: null, maxAgeHours: 30 }], "2026-11-23T07:00:00Z");
     expect(Object.keys(man.files)).toEqual(["history/EUR-GBP", "rates"]);
     expect(man.files.rates).toEqual({ path: rates.path, sha256: rates.sha256, bytes: rates.bytes });
     expect(man.sources.map((s) => s.id)).toEqual(["a", "z"]);
