@@ -1,4 +1,5 @@
 import { sourcesFor } from "@exm/core";
+import { handleAdmin, type AdminJob } from "./admin.js";
 import { collectSource, type CollectDeps } from "./collect.js";
 import { CRON_JOBS, type Env } from "./env.js";
 import { checkHealth, healthMessage, tariffReminder } from "./health.js";
@@ -17,8 +18,13 @@ function deps(env: Env): CollectDeps {
   };
 }
 
-async function runJob(job: "daily-morning" | "daily-ecb" | "health", env: Env): Promise<void> {
+async function runJob(job: AdminJob, env: Env): Promise<void> {
   const d = deps(env);
+  if (job === "publish") {
+    // Rebuild every bundle, history included (after loading the ECB backfill, say).
+    await publishBundles(new R2PublishStore(env.PUBLISHED), new D1Warehouse(env.DB), d.now(), { history: true });
+    return;
+  }
   if (job === "health") {
     const message = healthMessage(await checkHealth(d.warehouse, d.now()));
     if (message) await notify(env.NTFY_URL, "exchangedmoney: collector stale", message);
@@ -51,8 +57,9 @@ async function serveApp(request: Request, assets: Fetcher): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+    if (url.pathname === "/api/admin/run") return handleAdmin(request, env.ADMIN_TOKEN, (job) => runJob(job, env), (p) => ctx.waitUntil(p));
     if (url.pathname === "/api/subscribe") return handleSubscribe(request, new D1SubscriberStore(env.DB));
     if (url.pathname === "/api/health") {
       const report = await checkHealth(new D1Warehouse(env.DB), new Date());

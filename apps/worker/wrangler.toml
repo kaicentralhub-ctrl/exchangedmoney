@@ -2,6 +2,12 @@ name = "exchangedmoney"
 main = "src/index.ts"
 compatibility_date = "2026-11-01"
 
+# Custom domain. scripts/go-live.sh uncomments this when you choose to serve exchangedmoney.com.
+# routes = [
+#   { pattern = "exchangedmoney.com", custom_domain = true },
+#   { pattern = "www.exchangedmoney.com", custom_domain = true },
+# ]
+
 # Static holding page, plus the app built by apps/web into ./public/app. /api/* is handled by the Worker first.
 [assets]
 directory = "./public"
@@ -37,8 +43,11 @@ crons = ["0 6 * * *", "30 16 * * 1-5", "0 9 * * *"]
 
 [vars]
 COLLECTOR_VERSION = "0.1.0"
-# Set NTFY_URL as a secret or var, e.g. https://ntfy.sh/your-private-topic or your self-hosted ntfy.
-NTFY_URL = ""
+
+# Secrets (never in this file; scripts/go-live.sh sets them):
+#   ADMIN_TOKEN  enables POST /api/admin/run for starting a job by hand
+#   NTFY_URL     where alerts go, e.g. https://ntfy.sh/your-private-topic (optional)
+# Local dev: put them in apps/worker/.dev.vars (git-ignored).
 
 [observability]
 enabled = true

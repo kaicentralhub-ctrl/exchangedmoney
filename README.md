@@ -41,6 +41,21 @@ Rules the code enforces:
 
 Adding a source: add an entry to `packages/core/src/sources.ts`, write a parser with a fixture test, done. Next up: M&S Bank (its PDF has moved), Barclays, NatWest, Santander, Monzo, Starling, then Visa and Mastercard once permission is confirmed. Parked: Nationwide (figures sit behind a private API loaded by JavaScript). Excluded: Lloyds, Halifax and Bank of Scotland, whose pages sit behind bot challenges; we don't get around bot detection.
 
+## Going live
+
+One command, from your own terminal (it asks you to sign in to Cloudflare if needed):
+
+```sh
+./scripts/go-live.sh
+```
+
+It checks the code, creates the D1 database and both R2 buckets (or finds them), applies the schema, deploys, sets an admin token (stored in `~/.config/exchangedmoney/`, never printed) and optionally an ntfy alert URL, starts the first collection straight away, loads the ECB history back to 1999, and can attach exchangedmoney.com. It's safe to re-run.
+
+- **Workers Paid ($5 a month) is needed.** The free plan allows 10 ms of CPU per scheduled run, too little to read bank pages and PDFs.
+- R2 may ask for a payment method the first time it's enabled, even on its free tier.
+- On D1's free plan, the history loads in parts (about 100,000 rows a day): run `./scripts/go-live.sh --history` once a day until it says it's done.
+- To start a job by hand later: `curl -X POST -H "Authorization: Bearer $(cat ~/.config/exchangedmoney/admin-token)" "$(cat ~/.config/exchangedmoney/worker-url)/api/admin/run?job=daily-morning"` (jobs: `daily-morning`, `daily-ecb`, `health`, `publish`).
+
 ## Setup (once)
 
 You need a Cloudflare account (the one holding `exchangedmoney.com`) and Node 22 with pnpm.

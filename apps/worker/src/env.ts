@@ -6,6 +6,8 @@ export interface Env {
   ASSETS: Fetcher;
   COLLECTOR_VERSION: string;
   NTFY_URL?: string;
+  /** Secret; enables POST /api/admin/run. */
+  ADMIN_TOKEN?: string;
 }
 
 /** Cron expression -> job. Must match wrangler.toml [triggers]. */
